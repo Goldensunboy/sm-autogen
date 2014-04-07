@@ -90,8 +90,13 @@ int main(int argc, char **argv) {
 	// Write new difficulty metadata
 	fwrite("\r\n//----------dance-single - autogen----------\r\n", 48, 1, f);
 	fsetpos(f, &begin_data);
-	while(--choice) {
-		
+	while(--choice) { // Progress to the chosen difficulty
+		fgets(buf, 1024, f);
+		do {
+			fgetpos(f, &_pos);
+			fgets(buf, 1024, f);
+		} while(strncmp("#NOTES:", buf, 7));
+		fsetpos(f, &_pos);
 	}
 	for(int i = 0; i < 6; ++i) {
 		fgets(buf, 1024, f);
@@ -109,9 +114,39 @@ int main(int argc, char **argv) {
 		fsetpos(f, &_pos);
 	}
 
+	// Process the step data
+	srand(time(NULL));
+	int feet[2] = {0, 3}; // Feet start on left and right
+	int next_step = rand() & 1; // Random first foot
+	int counts[4] = {1, 1, 1, 1}; // Weights start at 1
+	int *weight_arr = malloc(sizeof(int) *128);
+	do {
+		fgets(buf, 1024, f);
+		fgetpos(f, &_pos);
+		if(*buf >= '0' && *buf <= '3') {
+			char *ptr = buf;
+			int has_step = 0;
+			do {
+				if(*ptr == '1' || *ptr == '2') {
+					has_step = 1;
+				}
+			} while(*++ptr != '\r');
+			if(has_step) {
 
-	printf("You chose: %d\n", choice);
-	printf("Challenge exists: %s\n", challenge_exists ? "yes" : "no");
+				// Generate a step
+				
+
+
+
+
+			} else {
+				fwrite("0000\r\n", 6, 1, f);
+			}
+		} else {
+			fwrite(buf, (int)(long)(strchr(buf, '\n') - (long)buf + 1), 1, f);
+		}
+		fsetpos(f, &_pos);
+	} while(*buf != ';');
 
 	return 0;
 }
