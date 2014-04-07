@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 
 			if(challenge_exists < 0 && !strcmp(ptr, "Challenge")) {
 				challenge_exists = 1;
-			} else {
+			} else if(challenge_exists < 0) {
 				challenge_exists = 0;
 			}
 
