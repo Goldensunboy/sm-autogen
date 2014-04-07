@@ -103,6 +103,9 @@ int main(int argc, char **argv) {
 		fgets(buf, 1024, f);
 		char *ptr = buf;
 		switch(i) {
+		case 1:
+			ptr = "     dance-single:\r\n";
+			break;
 		case 2:
 			ptr = "     autogen:\r\n";
 			break;
@@ -181,7 +184,10 @@ int main(int argc, char **argv) {
 
 				// Update the weights
 				for(int i = 0; i < 4; ++i) {
-					counts[i] = i == step ? 1 : counts[i] + 1;
+					int inc = next_step ?
+						(i == 3 ? 1 : 5) :
+						(!i ? 1 : 5);
+					counts[i] = i == step ? 1 : counts[i] + inc;
 				}
 				next_step ^= 1;
 				
