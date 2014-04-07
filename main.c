@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <errno.h>
 
 int main(int argc, char **argv) {
@@ -120,9 +121,11 @@ int main(int argc, char **argv) {
 	int next_step = rand() & 1; // Random first foot
 	int counts[4] = {1, 1, 1, 1}; // Weights start at 1
 	int *weight_arr = malloc(sizeof(int) *128);
+	// continue to end of the chart
 	do {
 		fgets(buf, 1024, f);
 		fgetpos(f, &_pos);
+		// copy the line if it's not step data
 		if(*buf >= '0' && *buf <= '3') {
 			char *ptr = buf;
 			int has_step = 0;
@@ -131,13 +134,64 @@ int main(int argc, char **argv) {
 					has_step = 1;
 				}
 			} while(*++ptr != '\r');
+			// if there is no step, write 0000
 			if(has_step) {
 
 				// Generate a step
+				int step;
+				if(!next_step) {
+					// left
+					if(!feet[1]) {
+						// previous step if right crossed over
+						step = *feet;
+					} else {
+						// weight the arrows and pick one
+						int idx = 0;
+						for(int i = 0; i < 4; ++i) {
+							// don't jackhammer
+							if(i != feet[1]) {
+								for(int j = 0; j < counts[i]; ++j) {
+									weight_arr[idx++] = i;
+								}
+							}
+						}
+						step = weight_arr[rand() % idx];
+					}
+					*feet = step;
+				} else {
+					// right
+					if(*feet == 3) {
+						// previous step if left crossed over
+						step = feet[1];
+					} else {
+						// weight the arrows and pick one
+						int idx = 0;
+						for(int i = 0; i < 4; ++i) {
+							// don't jackhammer
+							if(i != *feet) {
+								for(int j = 0; j < counts[i]; ++j) {
+									weight_arr[idx++] = i;
+								}
+							}
+						}
+						step = weight_arr[rand() % idx];
+					}
+					feet[1] = step;
+				}
+
+				// Update the weights
+				for(int i = 0; i < 4; ++i) {
+					counts[i] = i == step ? 1 : counts[i] + 1;
+				}
+				next_step ^= 1;
 				
+				// Write the step
+				char *write_str = malloc(sizeof(char) * 7);
+				strcpy(write_str, "0000\r\n");
+				write_str[step] = '1';
+				fwrite(write_str, 6, 1, f);
 
-
-
+				printf("%s", write_str);
 
 			} else {
 				fwrite("0000\r\n", 6, 1, f);
