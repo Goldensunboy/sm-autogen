@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
 			ptr = "     autogen:\r\n";
 			break;
 		case 3:
-			ptr = challenge_exists ? "     Edit:\r\n" : "     Challenge:'n";
+			ptr = challenge_exists ? "     Edit:\r\n" : "     Challenge:\r\n";
 			break;
 		}
 		fgetpos(f, &_pos);
