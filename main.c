@@ -20,13 +20,20 @@ int main(int argc, char **argv) {
 	// Retrieve available difficulties
 	int count = 0;
 	int challenge_exists = 0;
+	fpos_t begin_data, _pos;
+	int begin_data_set = 0;
 	char *buf = malloc(sizeof(char) << 10);
 	while(!feof(f)) {
 
 		// Read up to the next note data
 		while(1) {
+			fgetpos(f, &_pos);
 			if(fgets(buf, 1024, f)) {
 				if(!strncmp(buf, "#NOTES:", 7)) {
+					if(!begin_data_set) {
+						begin_data_set = 1;
+						begin_data = _pos; // Location of first data
+					}
 					break; // found note data
 				}
 			} else {
@@ -79,6 +86,29 @@ int main(int argc, char **argv) {
 			choice = 0;
 		}
 	} while(!choice);
+
+	// Write new difficulty metadata
+	fwrite("\r\n//----------dance-single - autogen----------\r\n", 48, 1, f);
+	fsetpos(f, &begin_data);
+	while(--choice) {
+		
+	}
+	for(int i = 0; i < 6; ++i) {
+		fgets(buf, 1024, f);
+		char *ptr = buf;
+		switch(i) {
+		case 2:
+			ptr = "     autogen:\r\n";
+			break;
+		case 3:
+			ptr = challenge_exists ? "     Edit:\r\n" : "     Challenge:'n";
+			break;
+		}
+		fgetpos(f, &_pos);
+		fwrite(ptr, strlen(ptr), 1, f);
+		fsetpos(f, &_pos);
+	}
+
 
 	printf("You chose: %d\n", choice);
 	printf("Challenge exists: %s\n", challenge_exists ? "yes" : "no");
